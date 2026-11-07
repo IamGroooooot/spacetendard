@@ -32,3 +32,5 @@ jobs:
             LICENSES.md
             README.md
             README.ko.md
+            README.en.md
+            NOTICE.md

@@ -1,14 +1,34 @@
-Copyright (c) 2026 Jung Woong Park
-with Reserved Font Name "Jetendard" (upstream font).
+Spacetendard — modified font and build software
 
-Spacetendard is a modified font combining Space Mono Nerd Font Mono and
-Pretendard, using build software derived from Jetendard and Yeomil Mono.
-Copyright 2016 Google Inc. All Rights Reserved. (Space Mono)
-Copyright (c) 2021, Kil Hyung-jin, with Reserved Font Name Pretendard.
-Copyright (c) 2026 Taehoon Kwon (Yeomil Mono build software),
-with Reserved Font Name "Yeomil Mono" (upstream font).
-Additional upstream notices and icon licenses are preserved in the licenses
-directory distributed with this software. The primary font name is Spacetendard.
+Copyright (c) 2026 IamGroooooot (Spacetendard modifications)
+https://github.com/IamGroooooot/spacetendard
+
+Upstream copyright and Reserved Font Name notices:
+
+Copyright (c) 2026 Jung Woong Park
+with Reserved Font Name "Jetendard".
+https://github.com/kuskhan/jetendard
+
+Copyright 2016 Google Inc. All Rights Reserved.
+Space Mono: https://github.com/googlefonts/spacemono
+Space Mono Nerd Font Mono: https://github.com/ryanoasis/nerd-fonts
+
+Copyright (c) 2021, Kil Hyung-jin (https://github.com/orioncactus/pretendard),
+with Reserved Font Name Pretendard.
+
+Copyright (c) 2026 Taehoon Kwon (https://github.com/taevel02/yeomil-mono)
+with Reserved Font Name "Yeomil Mono".
+
+Spacetendard is a fork and modification of Jetendard's build software,
+combining Space Mono Nerd Font Mono with fitted Pretendard Korean glyphs.
+The primary family name of this modified font is Spacetendard.
+
+This notice covers Spacetendard's contributions and preserves the upstream
+notices; it does not replace the copyright holders or relicense their work.
+Original component licenses and icon-specific notices are included in the
+licenses directory. In the source repository, that directory is
+src/spacetendard/licenses. See NOTICE.md and LICENSES.md for attribution,
+modifications, and redistribution guidance. No upstream endorsement is implied.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
