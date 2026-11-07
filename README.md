@@ -26,6 +26,28 @@ GitHub 웹페이지의 코드 블록에는 방문자의 글꼴이 적용되므�
 
 ![Spacetendard의 네 가지 스타일과 한글·영문 정렬](assets/spacetendard-specimen.png)
 
+### 한국어 sequence diagram 비교
+
+사용자 조회, 권한 확인, 결제 승인, 성공·거절 분기, 주문 저장·복구를 넣었습니다.
+두 이미지 모두 [같은 79칸 원문](assets/diagrams/korean-checkout.txt)을
+macOS CoreText에서 19pt, 기본 OpenType 기능으로 렌더링했습니다.
+Ghostty 화면 캡처는 아닙니다.
+
+**Space Mono Nerd Font Mono 원본 + macOS의 한글 fallback**
+
+![Space Mono 원본: 한글과 화살표가 있는 줄에서 세로선이 어긋나는 예시](assets/diagrams/spacemono-coretext.png)
+
+**Spacetendard 0.1.2**
+
+![Spacetendard: 같은 한글 sequence diagram의 세로선이 맞는 예시](assets/diagrams/spacetendard-coretext.png)
+
+원본에서는 한글 fallback의 폭과 `->`, `<-` 등을 한 칸으로 바꾸는 합자 때문에
+일부 줄의 경계가 당겨집니다. Spacetendard는 한글을 영문 2칸에 맞추고,
+이 ASCII 합자를 제거해 원문의 칸 수를 유지합니다.
+실제 터미널은 자체 셀 배치를 적용하므로 차이는 앱과 설정에 따라 달라질 수 있습니다.
+[비교 이미지 재생성 방법](assets/diagrams/README.md)
+
+
 ## 출처와 감사
 
 커스텀할 수 있도록 빌드·병합·폭 맞춤 코드를 공개해주신 **Jetendard** 제작자분들께

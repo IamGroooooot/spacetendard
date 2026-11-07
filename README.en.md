@@ -14,6 +14,28 @@ include Korean.
 
 ![Four styles and Korean/Latin alignment](assets/spacetendard-specimen.png)
 
+### Korean sequence diagram comparison
+
+Both images render the [same 79-column source](assets/diagrams/korean-checkout.txt)
+at 19 pt with default OpenType features in macOS CoreText. These are offscreen
+font renderings, not Ghostty screenshots. The example includes user lookup,
+authorization, payment approval, success/rejection branches, and order storage
+and recovery.
+
+**Original Space Mono Nerd Font Mono + macOS Hangul fallback**
+
+![Original Space Mono: displaced vertical borders on Korean and arrow lines](assets/diagrams/spacemono-coretext.png)
+
+**Spacetendard 0.1.2**
+
+![Spacetendard: aligned vertical borders with the same Korean diagram](assets/diagrams/spacetendard-coretext.png)
+
+The original's Hangul fallback advances and collapsing ASCII arrow ligatures
+shift the borders. Spacetendard fits Hangul into two Latin cells and removes
+those ASCII substitutions. Terminals apply their own cell layout, so actual
+results vary by app and settings. [Reproduce the images](assets/diagrams/README.md).
+
+
 ## Credits and thanks
 
 Thank you to **Jetendard** for publishing the code that made this customization
