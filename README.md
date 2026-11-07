@@ -1,144 +1,92 @@
-# Jetendard
+# Spacetendard
 
-This project is heavily inspired by
-[Yeomil Mono](https://github.com/taevel02/yeomil-mono) and reuses much of its
-implementation with minimal changes. Compared with
-[Yeomil Mono](https://github.com/taevel02/yeomil-mono), Jetendard uses
-JetBrainsMono Nerd Font Mono instead of
-[Geist Mono](https://github.com/vercel/geist-font/tree/main/fonts/GeistMono)
-and applies a `1.15` scale to
-[Pretendard](https://github.com/orioncactus/pretendard). Slightly enlarging
-Pretendard reduces unnecessary spacing around Korean glyphs, making Korean word
-spacing feel more visually stable while improving the clarity and precision of
-Hangul rendering.
+[한국어](README.ko.md)
 
-Jetendard is a reproducible font build project that combines
-[JetBrainsMono Nerd Font Mono](https://github.com/ryanoasis/nerd-fonts) with
-[Pretendard](https://github.com/orioncactus/pretendard) Korean glyphs.
+**Space Mono Nerd Font Mono + Pretendard, with Korean aligned to a two-cell grid.**
+Forked from [kuskhan/jetendard](https://github.com/kuskhan/jetendard), whose build
+implementation was inspired by [Yeomil Mono](https://github.com/taevel02/yeomil-mono).
+This fork replaces the JetBrains Mono base with Space Mono; the generated font
+family is **Spacetendard**.
 
-The generated family is named `Jetendard`. Latin glyphs, programming ligatures,
-and Nerd Font symbols come from the ligature-enabled `JetBrainsMonoNerdFontMono`
-files. Korean and CJK glyphs come from Pretendard and are fitted into exactly two
-Latin monospace advances.
+## Download and install
 
-**Zed Editor (font size 13.5)**
-![screenshot](assets/screeshots/screenshot-2026-07-06-at-3.38.07-pm.png)
+Download the TTF archive from [Releases](https://github.com/IamGroooooot/spacetendard/releases/latest),
+unzip, and install the four `.ttf` files using your OS font manager. Select
+`Spacetendard` in your editor or terminal, then restart the app if needed.
+Keep the included license files when redistributing the fonts.
 
-**Zed Editor (Korean comments)**
-![screenshot](assets/screeshots/screenshot-2026-07-07-at-10.59.35-am.png)
+![Generated font specimen](assets/spacetendard-specimen.png)
 
-**Ghostty Terminal (Text Output)**
-![screenshot](assets/screeshots/screenshot-2026-07-06-at-4.59.31-pm.png)
+## Width policy
 
-**Ghostty Terminal (Codex)**
-![screenshot](assets/screeshots/screenshot-2026-07-06-at-10.44.13-pm.png)
+- ASCII and Nerd Font Mono icons: one cell (612 font units).
+- All 11,172 modern Hangul syllables: two cells (1,224 units).
+- Modern NFD Hangul (decomposed leading/vowel/trailing Jamo): composes to the same
+  glyph and advance as NFC in a shaping engine such as HarfBuzz.
+- Compatibility Jamo and supported fullwidth characters: two cells.
+- Supported halfwidth forms, including halfwidth Hangul: one cell.
+- Korean outlines are scaled by `1.15` after units-per-em normalization, centered,
+  and capped to avoid clipping. The outline size does not change cell width.
 
+The base font's Latin outlines, OpenType features, and Nerd Font icons are
+retained. Space Mono does not supply JetBrains Mono's programming ligature set.
+
+This is a dual-width programming font, not a font where Hangul occupies one
+Latin cell. Unsupported characters can still fall back to another font. This
+project does not add all CJK ideographs, kana, emoji, or complete archaic Hangul
+shaping. Terminal `wcwidth` rules, ambiguous-width settings, fallback, and a
+renderer without Hangul shaping can still affect alignment. Select the font
+explicitly and use a terminal that treats modern Hangul as two cells.
 
 ## Build
 
-```bash
+Requires [uv](https://docs.astral.sh/uv/) and Python 3.12 or later.
+
+```sh
 uv sync --all-groups
 make download
 make run
+make lint
 make test
 ```
 
-`make run` builds the full 16-variant family. 
+Sources are pinned to Nerd Fonts **v3.4.0 / SpaceMono.zip** and Pretendard
+**v1.3.9**. The downloader verifies SHA-256 hashes before extracting fonts.
 
-Generated files are written to:
+| Output | Latin source | Korean source |
+| --- | --- | --- |
+| Regular | SpaceMonoNerdFontMono-Regular | Pretendard-Regular |
+| Italic | SpaceMonoNerdFontMono-Italic | Pretendard-Regular |
+| Bold | SpaceMonoNerdFontMono-Bold | Pretendard-Bold |
+| BoldItalic | SpaceMonoNerdFontMono-BoldItalic | Pretendard-Bold |
 
-- `fonts/ttf/Jetendard-*.ttf`
-- `fonts/otf/Jetendard-*.otf`
-- `fonts/webfont/Jetendard-*.woff2`
-- `fonts/webfont/jetendard.css`
+Korean stays upright in italic styles. No synthetic extra weights are produced.
 
-Generated outputs and upstream downloads are intentionally ignored by git.
+Outputs: `fonts/ttf/Spacetendard-*.ttf`, `fonts/otf/Spacetendard-*.otf`,
+`fonts/webfont/Spacetendard-*.woff2`, and `fonts/webfont/spacetendard.css`.
+The `.otf` files contain TrueType outlines, not CFF outlines. Each output
+directory includes the complete license bundle. Downloads and generated fonts
+are ignored by git; installable binaries are distributed through Releases.
 
-## CLI
-
-```bash
-uv run jetendard --help
+```sh
+uv run spacetendard --variants Regular Bold
+uv run spacetendard --weights Regular Bold --styles normal italic
+uv run spacetendard --korean-scale 1.10
+uv run spacetendard --help
+SPACETENDARD_RUN_FULL_INTEGRATION=1 uv run pytest
 ```
 
-Important options:
+Tests check all modern Hangul syllables and their NFD equivalents through
+HarfBuzz for every generated TTF, as well as mixed Korean/Latin strings,
+halfwidth/fullwidth characters, icons, names, style metadata, and notices.
+Run `make run` first to include the generated-family checks.
 
-- `--latin-dir`: directory containing `JetBrainsMonoNerdFontMono-*.ttf`
-- `--cjk-dir`: directory containing `Pretendard-*.ttf`
-- `--all`: build the full 16-variant matrix
-- `--variants`: explicit output variants such as `Regular`, `Italic`, or `BoldItalic`
-- `--weights`: weights to build; without `--styles`, this selects upright variants
-- `--styles`: `normal`, `italic`, or both
-- `--korean-italic-mode`: Korean/CJK policy for italic variants, currently `upright`
-- `--korean-scale`: visual scale for Korean/CJK glyph fitting
-- `--scale`: compatibility alias for `--korean-scale`
+## Licenses and attribution
 
-The default Korean scale is `1.15`.
-
-Examples:
-
-```bash
-uv run jetendard --all
-uv run jetendard --weights Regular Bold --styles normal italic
-uv run jetendard --variants Regular Light Bold
-```
-
-## Variant Coverage
-
-Jetendard builds every ligature-enabled `JetBrainsMonoNerdFontMono` Mono TTF
-variant present in the pinned Nerd Fonts archive:
-
-| Weight | Upright | Italic | Pretendard Korean/CJK source |
-| --- | --- | --- | --- |
-| Thin | `Jetendard-Thin` | `Jetendard-ThinItalic` | `Pretendard-Thin` |
-| ExtraLight | `Jetendard-ExtraLight` | `Jetendard-ExtraLightItalic` | `Pretendard-ExtraLight` |
-| Light | `Jetendard-Light` | `Jetendard-LightItalic` | `Pretendard-Light` |
-| Regular | `Jetendard-Regular` | `Jetendard-Italic` | `Pretendard-Regular` |
-| Medium | `Jetendard-Medium` | `Jetendard-MediumItalic` | `Pretendard-Medium` |
-| SemiBold | `Jetendard-SemiBold` | `Jetendard-SemiBoldItalic` | `Pretendard-SemiBold` |
-| Bold | `Jetendard-Bold` | `Jetendard-BoldItalic` | `Pretendard-Bold` |
-| ExtraBold | `Jetendard-ExtraBold` | `Jetendard-ExtraBoldItalic` | `Pretendard-ExtraBold` |
-
-Pretendard does not provide true static italic Korean/CJK fonts in the pinned
-archive, so italic Jetendard variants use italic JetBrainsMono Latin glyphs and
-upright Pretendard Korean/CJK glyphs. The generated font metadata and CSS still
-identify those variants as italic.
-
-## Scope
-
-Jetendard only uses `JetBrainsMonoNerdFontMono`. It does not use
-`JetBrainsMonoNerdFont`, `JetBrainsMonoNerdFontPropo`, or `JetBrainsMonoNL`
-no-ligature variants. Because the base font is already Nerd Font patched, this
-project does not run a second Nerd Fonts patching step.
-
-`Pretendard-Black` is not built by default because the confirmed
-`JetBrainsMonoNerdFontMono` archive does not contain a matching Black source.
-The downloader also extracts `PretendardVariable.ttf` when available for future
-custom-weight work.
-
-## Visual Check Samples
-
-Use the same renderer, point size, and line height when comparing Jetendard
-against yeomil-mono or another monospace baseline:
-
-```text
-Jetendard 테스트 ABC abc 0123456789
-가각간갇갈감갑값같꿇뷁힣
-한글과 English가 섞인 source comment
-if (상태 === "완료") return "성공";
-ㄱㄴㄷㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ
-（）［］｛｝，．：；！？
-```
-
-## Release Packaging
-
-The build writes installable files under `fonts/ttf`, `fonts/otf`, and
-`fonts/webfont`. Release archives can be prepared from those directories after a
-manual visual pass confirms the default Korean scale across upright and italic
-variants. The OTF files are OTF-compatible outputs using the same TrueType
-outlines as the generated TTFs.
-
-## License
-
-Jetendard is distributed under the [SIL Open Font License 1.1](LICENSE). Review
-the upstream JetBrains Mono, Nerd Fonts, Pretendard, and Yeomil Mono projects for
-their full copyright and reserved-name notices.
+See [LICENSE](LICENSE) and [LICENSES.md](LICENSES.md) for the source-by-source
+review, original notices, and redistribution conditions. The font is distributed
+under SIL OFL 1.1 with the upstream icon notices retained. It may be used,
+modified, and redistributed under those conditions; the font cannot be sold
+by itself. The reserved names `Jetendard` and `Pretendard` are retained only in
+attribution, not used as the generated family name. No upstream endorsement
+or rights to third-party trademarks are claimed.

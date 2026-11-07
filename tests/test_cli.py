@@ -1,11 +1,11 @@
-"""Tests for the Jetendard CLI helpers."""
+"""Tests for the Spacetendard CLI helpers."""
 
 from __future__ import annotations
 
 import pytest
 
-from jetendard.builder import DEFAULT_VARIANTS, get_variants_by_names
-from jetendard.cli import (
+from spacetendard.builder import DEFAULT_VARIANTS, get_variants_by_names
+from spacetendard.cli import (
     family_file_stem,
     select_variants,
     validate_styles,
@@ -15,11 +15,11 @@ from jetendard.cli import (
 
 
 def test_family_file_stem_removes_spaces() -> None:
-    assert family_file_stem("Jetendard Mono") == "JetendardMono"
+    assert family_file_stem("Spacetendard Mono") == "SpacetendardMono"
 
 
 def test_validate_weights_accepts_supported_weights() -> None:
-    assert validate_weights(["Regular", "Light", "Bold"]) == ["Regular", "Light", "Bold"]
+    assert validate_weights(["Regular", "Bold"]) == ["Regular", "Bold"]
 
 
 def test_validate_weights_rejects_unknown_weight() -> None:
@@ -74,15 +74,15 @@ def test_select_variants_rejects_ambiguous_combinations() -> None:
 
 def test_write_css_generates_font_face_rules(tmp_path) -> None:
     variants = get_variants_by_names(["Regular", "Italic", "BoldItalic"])
-    css_path = write_css(tmp_path, "Jetendard", variants)
+    css_path = write_css(tmp_path, "Spacetendard", variants)
     content = css_path.read_text(encoding="utf-8")
 
-    assert css_path.name == "jetendard.css"
-    assert "font-family: 'Jetendard';" in content
-    assert "Jetendard-Regular.woff2" in content
+    assert css_path.name == "spacetendard.css"
+    assert "font-family: 'Spacetendard';" in content
+    assert "Spacetendard-Regular.woff2" in content
     assert "font-weight: 400;" in content
     assert "font-style: normal;" in content
-    assert "Jetendard-Italic.woff2" in content
+    assert "Spacetendard-Italic.woff2" in content
     assert "font-style: italic;" in content
-    assert "Jetendard-BoldItalic.woff2" in content
+    assert "Spacetendard-BoldItalic.woff2" in content
     assert "font-weight: 700;" in content

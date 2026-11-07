@@ -1,7 +1,7 @@
 [project]
-name = "jetendard"
+name = "spacetendard"
 version = "0.1.0"
-description = "Build Jetendard, a JetBrainsMono Nerd Font Mono and Pretendard Korean monospace font."
+description = "Build Spacetendard, a SpaceMono Nerd Font Mono and Pretendard Korean monospace font."
 readme = "README.md"
 authors = [
     { name = "Jung Woong Park" }
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-jetendard = "jetendard:main"
+spacetendard = "spacetendard:main"
 
 [build-system]
 requires = ["uv_build>=0.11.19,<0.12.0"]
@@ -25,6 +25,7 @@ lint = [
 ]
 test = [
     "pytest>=9.0.3",
+    "uharfbuzz>=0.57.0",
 ]
 
 [tool.ruff]

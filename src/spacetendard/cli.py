@@ -1,15 +1,16 @@
-"""Command-line interface for Jetendard."""
+"""Command-line interface for Spacetendard."""
 
 from __future__ import annotations
 
 import argparse
 import logging
+import shutil
 import sys
 from pathlib import Path
 
 from fontTools.ttLib import TTFont
 
-from jetendard.builder import (
+from spacetendard.builder import (
     DEFAULT_KOREAN_SCALE,
     DEFAULT_VARIANTS,
     DEFAULT_WEIGHTS,
@@ -57,17 +58,16 @@ def write_css(output_web_dir: Path, family_name: str, variants: list[FontVariant
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the Jetendard CLI parser."""
+    """Build the Spacetendard CLI parser."""
     parser = argparse.ArgumentParser(
         description=(
-            "Build Jetendard from ligature-enabled JetBrainsMono Nerd Font Mono "
-            "and Pretendard Korean glyphs."
+            "Build Spacetendard from SpaceMono Nerd Font Mono and Pretendard Korean glyphs."
         )
     )
     parser.add_argument(
         "--latin-dir",
-        default="upstream/jetbrainsmono",
-        help="Directory containing JetBrainsMonoNerdFontMono TTF files.",
+        default="upstream/spacemono",
+        help="Directory containing SpaceMonoNerdFontMono TTF files.",
     )
     parser.add_argument(
         "--cjk-dir",
@@ -81,7 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--family-name",
-        default="Jetendard",
+        default="Spacetendard",
         help="Generated font family name.",
     )
     parser.add_argument(
@@ -123,7 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Build the full 16-variant Jetendard coverage matrix.",
+        help="Build the full 4-variant Spacetendard coverage matrix.",
     )
     parser.add_argument(
         "--korean-italic-mode",
@@ -195,7 +195,7 @@ def select_variants(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the Jetendard build."""
+    """Run the Spacetendard build."""
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -224,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
 
     stem = family_file_stem(args.family_name)
     logger.info(
-        "Starting Jetendard build for variants: %s",
+        "Starting Spacetendard build for variants: %s",
         ", ".join(variant.output_suffix for variant in variants),
     )
 
@@ -237,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
 
         if not latin_path.exists():
             logger.error("Latin font file not found: %s", latin_path)
-            logger.error("Run `make download` to fetch JetBrainsMonoNerdFontMono files.")
+            logger.error("Run `make download` to fetch SpaceMonoNerdFontMono files.")
             return 1
         if not cjk_path.exists():
             logger.error("CJK font file not found: %s", cjk_path)
@@ -280,8 +280,12 @@ def main(argv: list[str] | None = None) -> int:
             logger.exception("Failed to build variant %s", variant.output_suffix)
             return 1
 
+    license_dir = Path(__file__).parent / "licenses"
+    for output_dir in (ttf_dir, otf_dir, web_dir):
+        shutil.copytree(license_dir, output_dir / "licenses", dirs_exist_ok=True)
+        shutil.copy2(license_dir / "LICENSE", output_dir / "LICENSE")
     write_css(web_dir, args.family_name, variants)
-    logger.info("All requested Jetendard variants built successfully")
+    logger.info("All requested Spacetendard variants built successfully")
     return 0
 
 

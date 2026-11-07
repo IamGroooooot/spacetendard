@@ -1,144 +1,69 @@
-# Jetendard
+# Spacetendard
 
-[English](README.md)
+**Space Mono Nerd Font Mono와 Pretendard를 결합해 한글을 영문 2칸에 맞춘 폰트입니다.**
+[kuskhan/jetendard](https://github.com/kuskhan/jetendard)를 포크하여
+JetBrains Mono 대신 Space Mono를 사용합니다. 원본이 참고한
+[Yeomil Mono](https://github.com/taevel02/yeomil-mono)의 기여도 함께 밝힙니다.
 
-이 프로젝트는 [Yeomil Mono](https://github.com/taevel02/yeomil-mono)에 큰
-영향을 받았으며, 구현의 상당 부분을 최소한의 변경만 거쳐 재사용합니다.
-[Yeomil Mono](https://github.com/taevel02/yeomil-mono)와 비교했을 때
-Jetendard는 [Geist Mono](https://github.com/vercel/geist-font/tree/main/fonts/GeistMono)
-대신 JetBrainsMono Nerd Font Mono를 사용하고,
-[Pretendard](https://github.com/orioncactus/pretendard)에 `1.15` 배율을
-적용합니다. Pretendard를 살짝 확대하면 한글 글리프 주변의 불필요한 여백을
-줄일 수 있어, 한글 띄어쓰기가 시각적으로 더 안정적으로 느껴지고 한글 렌더링의
-선명도와 정확성도 향상됩니다.
+## 설치
 
-Jetendard는
-[JetBrainsMono Nerd Font Mono](https://github.com/ryanoasis/nerd-fonts)와
-[Pretendard](https://github.com/orioncactus/pretendard) 한글 글리프를 결합하여
-폰트를 빌드하는 프로젝트입니다.
+[최신 릴리스](https://github.com/IamGroooooot/spacetendard/releases/latest)에서
+TTF 압축 파일을 내려받아 풀고, 네 개의 `.ttf` 파일을 설치하세요.
+에디터·터미널의 글꼴을 `Spacetendard`로 선택하고 필요한 경우 앱을 재시작하세요.
 
-생성되는 폰트 패밀리의 이름은 `Jetendard`입니다. 라틴 글리프, 프로그래밍
-리거처, Nerd Font 심볼은 리거처가 활성화된 `JetBrainsMonoNerdFontMono`
-파일에서 가져옵니다. 한글 및 CJK 글리프는 Pretendard에서 가져오며, 라틴 문자
-고정폭의 정확히 두 배 폭에 맞춰집니다.
+![생성된 폰트 샘플](assets/spacetendard-specimen.png)
 
-**Zed 에디터 (폰트 사이즈 13.5)**
-![예시 스크린샷](assets/screeshots/screenshot-2026-07-06-at-3.38.07-pm.png)
+## 폭 처리
 
-**Zed 에디터 (한글 주석)**
-![screenshot](assets/screeshots/screenshot-2026-07-07-at-10.59.35-am.png)
+- 영문·숫자·Nerd Font Mono 아이콘: 1칸, 612 units.
+- 현대 한글 완성형 11,172자: 2칸, 1,224 units.
+- 분해 자모 한글: HarfBuzz 같은 조판 엔진에서 완성형과 같은 글리프·폭으로 조합.
+- 호환 자모와 지원하는 전각 문자: 2칸.
+- 지원하는 반각 문자·반각 한글: 1칸.
 
-**Ghostty 터미널 (텍스트 출력)**
-![screenshot](assets/screeshots/screenshot-2026-07-06-at-4.59.31-pm.png)
+Regular, Italic, Bold, BoldItalic 네 가지를 제공합니다.
+Italic에서도 한글은 기울이지 않습니다. 한글 윤곽은 기본 1.15배로 확대하고
+셀 안에 가운데 정렬하며, 넘치는 글리프는 크기를 제한합니다.
+Space Mono의 영문·OpenType 기능·Nerd Font 아이콘을 유지합니다.
+JetBrains Mono의 프로그래밍 합자 세트를 추가하지는 않습니다.
 
-**Ghostty 터미널 (Codex)**
-![screenshot](assets/screeshots/screenshot-2026-07-06-at-10.44.13-pm.png)
+한글 한 글자가 영문 두 글자 폭을 차지하는 방식입니다.
+모든 유니코드 문자를 추가하는 폰트는 아니므로, 지원하지 않는 한자·가나·이모지나
+옛한글은 대체 폰트 또는 별도 조판이 필요합니다. 터미널의 문자 폭 판단,
+모호한 폭 설정, 대체 폰트, 한글 조합 지원 여부에 따른 차이까지 폰트만으로
+해결하지는 못합니다.
 
-## 빌드
+## 직접 빌드
 
-```bash
+```sh
 uv sync --all-groups
 make download
 make run
+make lint
 make test
 ```
 
-`make run`은 전체 16개 변형 패밀리를 빌드합니다. 
+Nerd Fonts v3.4.0과 Pretendard v1.3.9를 고정하고 다운로드 SHA-256을 검사합니다.
+결과는 `fonts/ttf`, `fonts/otf`, `fonts/webfont`에 생성되며,
+각 폴더에 저작권·라이선스 고지를 함께 복사합니다.
+OTF 확장자 파일도 TrueType 윤곽을 사용합니다.
 
-생성된 파일은 다음 위치에 기록됩니다.
-
-- `fonts/ttf/Jetendard-*.ttf`
-- `fonts/otf/Jetendard-*.otf`
-- `fonts/webfont/Jetendard-*.woff2`
-- `fonts/webfont/jetendard.css`
-
-생성 결과물과 업스트림 다운로드 파일은 의도적으로 git에서 무시됩니다.
-
-## CLI
-
-```bash
-uv run jetendard --help
+```sh
+uv run spacetendard --variants Regular Bold
+uv run spacetendard --korean-scale 1.10
+SPACETENDARD_RUN_FULL_INTEGRATION=1 uv run pytest
 ```
 
-주요 옵션:
-
-- `--latin-dir`: `JetBrainsMonoNerdFontMono-*.ttf`가 들어 있는 디렉터리
-- `--cjk-dir`: `Pretendard-*.ttf`가 들어 있는 디렉터리
-- `--all`: 전체 16개 변형 매트릭스 빌드
-- `--variants`: `Regular`, `Italic`, `BoldItalic`처럼 출력 변형을 명시
-- `--weights`: 빌드할 굵기. `--styles`가 없으면 upright 변형을 선택
-- `--styles`: `normal`, `italic`, 또는 둘 다
-- `--korean-italic-mode`: italic 변형에서 한글/CJK를 처리하는 정책. 현재는 `upright`
-- `--korean-scale`: 한글/CJK 글리프 맞춤에 사용할 시각적 배율
-- `--scale`: `--korean-scale`의 호환성 별칭
-
-기본 한글 배율은 `1.15`입니다.
-
-예시:
-
-```bash
-uv run jetendard --all
-uv run jetendard --weights Regular Bold --styles normal italic
-uv run jetendard --variants Regular Light Bold
-```
-
-## 변형 지원 범위
-
-Jetendard는 고정된 Nerd Fonts 아카이브에 포함된, 리거처가 활성화된 모든
-`JetBrainsMonoNerdFontMono` Mono TTF 변형을 빌드합니다.
-
-| 굵기 | Upright | Italic | Pretendard 한글/CJK 소스 |
-| --- | --- | --- | --- |
-| Thin | `Jetendard-Thin` | `Jetendard-ThinItalic` | `Pretendard-Thin` |
-| ExtraLight | `Jetendard-ExtraLight` | `Jetendard-ExtraLightItalic` | `Pretendard-ExtraLight` |
-| Light | `Jetendard-Light` | `Jetendard-LightItalic` | `Pretendard-Light` |
-| Regular | `Jetendard-Regular` | `Jetendard-Italic` | `Pretendard-Regular` |
-| Medium | `Jetendard-Medium` | `Jetendard-MediumItalic` | `Pretendard-Medium` |
-| SemiBold | `Jetendard-SemiBold` | `Jetendard-SemiBoldItalic` | `Pretendard-SemiBold` |
-| Bold | `Jetendard-Bold` | `Jetendard-BoldItalic` | `Pretendard-Bold` |
-| ExtraBold | `Jetendard-ExtraBold` | `Jetendard-ExtraBoldItalic` | `Pretendard-ExtraBold` |
-
-Pretendard는 고정된 아카이브에서 true static italic 한글/CJK 폰트를 제공하지
-않습니다. 따라서 italic Jetendard 변형은 italic JetBrainsMono 라틴 글리프와
-upright Pretendard 한글/CJK 글리프를 함께 사용합니다. 생성된 폰트 메타데이터와
-CSS에서는 해당 변형을 여전히 italic으로 식별합니다.
-
-## 범위
-
-Jetendard는 `JetBrainsMonoNerdFontMono`만 사용합니다.
-`JetBrainsMonoNerdFont`, `JetBrainsMonoNerdFontPropo`, 또는 리거처가 없는
-`JetBrainsMonoNL` 변형은 사용하지 않습니다. 기본 폰트가 이미 Nerd Font 패치가
-적용된 상태이므로, 이 프로젝트는 두 번째 Nerd Fonts 패치 단계를 실행하지
-않습니다.
-
-`Pretendard-Black`은 기본으로 빌드되지 않습니다. 확인된
-`JetBrainsMonoNerdFontMono` 아카이브에 대응되는 Black 소스가 없기 때문입니다.
-다운로더는 향후 커스텀 굵기 작업을 위해 사용 가능한 경우 `PretendardVariable.ttf`도
-추출합니다.
-
-## 시각 확인 샘플
-
-Jetendard를 yeomil-mono 또는 다른 고정폭 기준 폰트와 비교할 때는 동일한
-렌더러, 포인트 크기, 줄 높이를 사용하세요.
-
-```text
-Jetendard 테스트 ABC abc 0123456789
-가각간갇갈감갑값같꿇뷁힣
-한글과 English가 섞인 source comment
-if (상태 === "완료") return "성공";
-ㄱㄴㄷㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ
-（）［］｛｝，．：；！？
-```
-
-## 릴리스 패키징
-
-빌드는 설치 가능한 파일을 `fonts/ttf`, `fonts/otf`, `fonts/webfont` 아래에
-기록합니다. upright 및 italic 변형 전반에서 기본 한글 배율을 수동으로 시각
-확인한 뒤, 해당 디렉터리에서 릴리스 아카이브를 준비할 수 있습니다. OTF 파일은
-생성된 TTF와 동일한 TrueType outline을 사용하는 OTF 호환 출력물입니다.
+생성된 네 폰트의 현대 한글 전체와 분해 자모 전체를 HarfBuzz로 검사합니다.
+영문·한글 혼합, 반각·전각, 아이콘, 스타일 정보와 라이선스 고지도 확인합니다.
 
 ## 라이선스
 
-Jetendard는 [SIL Open Font License 1.1](LICENSE)에 따라 배포됩니다. 전체
-저작권 및 reserved name 고지는 업스트림 JetBrains Mono, Nerd Fonts,
-Pretendard, Yeomil Mono 프로젝트를 확인하세요.
+Space Mono와 Pretendard는 SIL OFL 1.1로 수정·결합·재배포할 수 있습니다.
+`Jetendard`, `Pretendard` 예약 이름은 출처 고지에만 남기고
+파생 폰트 이름은 `Spacetendard`로 변경했습니다. Nerd Fonts 아이콘의 별도 고지도
+배포물에 동봉합니다. 재배포할 때 라이선스 폴더를 함께 보존해야 하며,
+폰트 자체만을 단독 판매할 수는 없습니다.
+
+상세 조사와 출처는 [LICENSES.md](LICENSES.md),
+빌드·지원 범위의 자세한 설명은 [영문 README](README.md)를 참고하세요.

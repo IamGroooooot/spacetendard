@@ -1,0 +1,34 @@
+name: Build and verify fonts
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked --all-groups
+      - run: make lint
+      - run: make download
+      - run: make run
+      - run: uv run pytest
+        env:
+          SPACETENDARD_RUN_FULL_INTEGRATION: '1'
+      - run: uv build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spacetendard
+          path: |
+            fonts/ttf
+            fonts/otf
+            fonts/webfont
+            LICENSE
+            LICENSES.md
+            README.md
+            README.ko.md

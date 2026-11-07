@@ -1,15 +1,17 @@
-"""Unit tests for Jetendard builder logic."""
+"""Unit tests for Spacetendard builder logic."""
 
 from __future__ import annotations
 
 import os
+import unicodedata
 from pathlib import Path
 
 import pytest
+import uharfbuzz as hb
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 
-from jetendard.builder import (
+from spacetendard.builder import (
     DEFAULT_VARIANTS,
     calculate_fitted_transform,
     calculate_korean_target_width,
@@ -78,25 +80,8 @@ def make_style_font() -> TTFont:
 def test_default_variants_cover_full_matrix() -> None:
     suffixes = [variant.output_suffix for variant in DEFAULT_VARIANTS]
 
-    assert len(DEFAULT_VARIANTS) == 16
-    assert suffixes == [
-        "Thin",
-        "ThinItalic",
-        "ExtraLight",
-        "ExtraLightItalic",
-        "Light",
-        "LightItalic",
-        "Regular",
-        "Italic",
-        "Medium",
-        "MediumItalic",
-        "SemiBold",
-        "SemiBoldItalic",
-        "Bold",
-        "BoldItalic",
-        "ExtraBold",
-        "ExtraBoldItalic",
-    ]
+    assert len(DEFAULT_VARIANTS) == 4
+    assert suffixes == ["Regular", "Italic", "Bold", "BoldItalic"]
 
 
 def test_regular_italic_variant_uses_special_source_filename() -> None:
@@ -104,7 +89,7 @@ def test_regular_italic_variant_uses_special_source_filename() -> None:
 
     assert variant.output_suffix == "Italic"
     assert variant.subfamily_name == "Italic"
-    assert variant.latin_filename == "JetBrainsMonoNerdFontMono-Italic.ttf"
+    assert variant.latin_filename == "SpaceMonoNerdFontMono-Italic.ttf"
     assert variant.cjk_weight_name == "Regular"
     assert variant.css_weight == 400
     assert variant.is_italic is True
@@ -193,25 +178,25 @@ def test_fitted_transform_caps_unsafe_scale() -> None:
 
 def test_update_font_names_sets_required_records() -> None:
     font = make_name_font()
-    update_font_names(font, "Jetendard", "Regular")
+    update_font_names(font, "Spacetendard", "Regular")
 
     name_table = font["name"]
-    assert name_table.getName(1, 3, 1, 0x409).toUnicode() == "Jetendard"
+    assert name_table.getName(1, 3, 1, 0x409).toUnicode() == "Spacetendard"
     assert name_table.getName(2, 3, 1, 0x409).toUnicode() == "Regular"
-    assert name_table.getName(4, 3, 1, 0x409).toUnicode() == "Jetendard Regular"
-    assert name_table.getName(6, 3, 1, 0x409).toUnicode() == "Jetendard-Regular"
-    assert name_table.getName(16, 3, 1, 0x409).toUnicode() == "Jetendard"
+    assert name_table.getName(4, 3, 1, 0x409).toUnicode() == "Spacetendard Regular"
+    assert name_table.getName(6, 3, 1, 0x409).toUnicode() == "Spacetendard-Regular"
+    assert name_table.getName(16, 3, 1, 0x409).toUnicode() == "Spacetendard"
     assert name_table.getName(17, 3, 1, 0x409).toUnicode() == "Regular"
 
 
 def test_update_font_names_supports_italic_postscript_names() -> None:
     font = make_name_font()
-    update_font_names(font, "Jetendard", "Bold Italic")
+    update_font_names(font, "Spacetendard", "Bold Italic")
 
     name_table = font["name"]
     assert name_table.getName(2, 3, 1, 0x409).toUnicode() == "Bold Italic"
-    assert name_table.getName(4, 3, 1, 0x409).toUnicode() == "Jetendard Bold Italic"
-    assert name_table.getName(6, 3, 1, 0x409).toUnicode() == "Jetendard-BoldItalic"
+    assert name_table.getName(4, 3, 1, 0x409).toUnicode() == "Spacetendard Bold Italic"
+    assert name_table.getName(6, 3, 1, 0x409).toUnicode() == "Spacetendard-BoldItalic"
     assert name_table.getName(17, 3, 1, 0x409).toUnicode() == "Bold Italic"
 
 
@@ -255,17 +240,17 @@ def test_enforce_monospace_flags() -> None:
 
 
 def test_integration_merge_skips_without_upstream_fonts(tmp_path: Path) -> None:
-    latin_path = Path("upstream/jetbrainsmono/JetBrainsMonoNerdFontMono-Regular.ttf")
+    latin_path = Path("upstream/spacemono/SpaceMonoNerdFontMono-Regular.ttf")
     cjk_path = Path("upstream/pretendard/Pretendard-Regular.ttf")
     if not latin_path.exists() or not cjk_path.exists():
         pytest.skip("upstream fonts have not been downloaded")
 
-    output_path = tmp_path / "Jetendard-Regular.ttf"
+    output_path = tmp_path / "Spacetendard-Regular.ttf"
     stats = merge_fonts(
         latin_path=latin_path,
         cjk_path=cjk_path,
         output_path=output_path,
-        family_name="Jetendard",
+        family_name="Spacetendard",
         subfamily_name="Regular",
     )
 
@@ -274,7 +259,7 @@ def test_integration_merge_skips_without_upstream_fonts(tmp_path: Path) -> None:
     features = [record.FeatureTag for record in font["GSUB"].table.FeatureList.FeatureRecord]
     assert stats.copied_count > 10_000
     assert font["hmtx"].metrics[cmap[ord("가")]][0] == font["hmtx"].metrics[cmap[ord("A")]][0] * 2
-    assert font["name"].getName(1, 3, 1, 0x409).toUnicode() == "Jetendard"
+    assert font["name"].getName(1, 3, 1, 0x409).toUnicode() == "Spacetendard"
     assert font["post"].isFixedPitch == 1
     assert "calt" in features
     assert "ccmp" in features
@@ -283,17 +268,17 @@ def test_integration_merge_skips_without_upstream_fonts(tmp_path: Path) -> None:
 
 def test_integration_merge_italic_metadata_skips_without_upstream_fonts(tmp_path: Path) -> None:
     variant = make_font_variant("Regular", "italic")
-    latin_path = Path("upstream/jetbrainsmono") / variant.latin_filename
+    latin_path = Path("upstream/spacemono") / variant.latin_filename
     cjk_path = Path("upstream/pretendard/Pretendard-Regular.ttf")
     if not latin_path.exists() or not cjk_path.exists():
         pytest.skip("upstream italic fonts have not been downloaded")
 
-    output_path = tmp_path / "Jetendard-Italic.ttf"
+    output_path = tmp_path / "Spacetendard-Italic.ttf"
     stats = merge_fonts(
         latin_path=latin_path,
         cjk_path=cjk_path,
         output_path=output_path,
-        family_name="Jetendard",
+        family_name="Spacetendard",
         subfamily_name=variant.subfamily_name,
         typographic_subfamily_name=variant.typographic_subfamily_name,
         is_italic=variant.is_italic,
@@ -306,7 +291,7 @@ def test_integration_merge_italic_metadata_skips_without_upstream_fonts(tmp_path
     assert stats.copied_count > 10_000
     assert font["hmtx"].metrics[cmap[ord("가")]][0] == font["hmtx"].metrics[cmap[ord("A")]][0] * 2
     assert font["name"].getName(2, 3, 1, 0x409).toUnicode() == "Italic"
-    assert font["name"].getName(6, 3, 1, 0x409).toUnicode() == "Jetendard-Italic"
+    assert font["name"].getName(6, 3, 1, 0x409).toUnicode() == "Spacetendard-Italic"
     assert font["head"].macStyle & (1 << 1)
     assert font["OS/2"].fsSelection & (1 << 0)
     assert "calt" in features
@@ -315,12 +300,12 @@ def test_integration_merge_italic_metadata_skips_without_upstream_fonts(tmp_path
 
 
 def test_full_matrix_integration_when_enabled(tmp_path: Path) -> None:
-    if os.environ.get("JETENDARD_RUN_FULL_INTEGRATION") != "1":
-        pytest.skip("set JETENDARD_RUN_FULL_INTEGRATION=1 to build the full variant matrix")
+    if os.environ.get("SPACETENDARD_RUN_FULL_INTEGRATION") != "1":
+        pytest.skip("set SPACETENDARD_RUN_FULL_INTEGRATION=1 to build the full variant matrix")
 
     missing_sources: list[Path] = []
     for variant in DEFAULT_VARIANTS:
-        latin_path = Path("upstream/jetbrainsmono") / variant.latin_filename
+        latin_path = Path("upstream/spacemono") / variant.latin_filename
         cjk_path = Path("upstream/pretendard") / f"Pretendard-{variant.cjk_weight_name}.ttf"
         if not latin_path.exists():
             missing_sources.append(latin_path)
@@ -331,14 +316,14 @@ def test_full_matrix_integration_when_enabled(tmp_path: Path) -> None:
         pytest.skip(f"upstream fonts missing: {preview}")
 
     for variant in DEFAULT_VARIANTS:
-        latin_path = Path("upstream/jetbrainsmono") / variant.latin_filename
+        latin_path = Path("upstream/spacemono") / variant.latin_filename
         cjk_path = Path("upstream/pretendard") / f"Pretendard-{variant.cjk_weight_name}.ttf"
-        output_path = tmp_path / f"Jetendard-{variant.output_suffix}.ttf"
+        output_path = tmp_path / f"Spacetendard-{variant.output_suffix}.ttf"
         merge_fonts(
             latin_path=latin_path,
             cjk_path=cjk_path,
             output_path=output_path,
-            family_name="Jetendard",
+            family_name="Spacetendard",
             subfamily_name=variant.subfamily_name,
             typographic_subfamily_name=variant.typographic_subfamily_name,
             is_italic=variant.is_italic,
@@ -356,3 +341,53 @@ def test_full_matrix_integration_when_enabled(tmp_path: Path) -> None:
         assert cmap[0xE0B0]
         assert "ccmp" in features
         font.close()
+
+
+@pytest.mark.parametrize("reserved", ["Jetendard", "Pretendard", "Jetendard Mono"])
+def test_reject_reserved_family_names(reserved):
+    with pytest.raises(ValueError, match="Reserved Font Names"):
+        update_font_names(make_name_font(), reserved, "Regular")
+
+
+def assert_korean_grid(path):
+    with TTFont(path) as font:
+        cmap = font.getBestCmap()
+        metrics = font["hmtx"].metrics
+        cell = metrics[cmap[ord("A")]][0]
+        assert cell == 612
+        for cp in range(0xAC00, 0xD7A4):
+            assert metrics[cmap[cp]][0] == 1224
+        assert metrics[cmap[0xFFA1]][0] == 612  # halfwidth Hangul kiyeok
+        assert metrics[cmap[0xFF21]][0] == 1224  # fullwidth A
+        assert metrics[cmap[0xE0B0]][0] == 612  # Nerd Fonts powerline icon
+        assert "Kil Hyung-jin" in font["name"].getName(0, 3, 1, 0x409).toUnicode()
+        assert "SIL OPEN FONT LICENSE" in font["name"].getName(13, 3, 1, 0x409).toUnicode()
+        assert "Spacetendard" in font["name"].getName(1, 3, 1, 0x409).toUnicode()
+    shaped_font = hb.Font(hb.Face(path.read_bytes()))
+
+    def shape(text):
+        buf = hb.Buffer()
+        buf.add_str(text)
+        buf.guess_segment_properties()
+        hb.shape(shaped_font, buf)
+        return [
+            (i.codepoint, p.x_advance)
+            for i, p in zip(buf.glyph_infos, buf.glyph_positions, strict=True)
+        ]
+
+    for cp in range(0xAC00, 0xD7A4):
+        syllable = chr(cp)
+        composed = shape(syllable)
+        assert len(composed) == 1 and composed[0][0] != 0 and composed[0][1] == 1224
+        assert shape(unicodedata.normalize("NFD", syllable)) == composed
+    for text, expected in [("AB한글12", 4896), ("AV", 1224), ("fi", 1224)]:
+        assert sum(advance for _, advance in shape(text)) == expected
+
+
+def test_generated_family_grid():
+    paths = sorted(Path("fonts/ttf").glob("Spacetendard-*.ttf"))
+    if not paths:
+        pytest.skip("run make run to validate all generated fonts")
+    assert len(paths) == 4
+    for path in paths:
+        assert_korean_grid(path)

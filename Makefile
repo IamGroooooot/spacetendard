@@ -20,19 +20,19 @@ download:
 	uv run python download_upstream.py
 
 ensure-upstream:
-	@if [ ! -d "upstream/jetbrainsmono" ] || [ ! -d "upstream/pretendard" ]; then \
+	@if [ ! -d "upstream/spacemono" ] || [ ! -d "upstream/pretendard" ]; then \
 		echo "Upstream font resources not found. Downloading..."; \
 		$(MAKE) download; \
 	fi
 
 run: ensure-upstream
-	uv run jetendard --all
+	uv run spacetendard --all
 
 run-all: ensure-upstream
-	uv run jetendard --all
+	uv run spacetendard --all
 
 run-minimal: ensure-upstream
-	uv run jetendard --variants Regular Light Bold
+	uv run spacetendard --variants Regular Bold
 
 clean:
 	rm -rf fonts/ttf fonts/otf fonts/webfont fonts/specimens

@@ -1,8 +1,9 @@
-"""Font merging and fitting logic for Jetendard."""
+"""Font merging and fitting logic for Spacetendard."""
 
 from __future__ import annotations
 
 import logging
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -102,7 +103,7 @@ class MergeStats:
 
 @dataclass(frozen=True)
 class FontVariant:
-    """One buildable Jetendard output variant."""
+    """One buildable Spacetendard output variant."""
 
     weight_name: str
     css_weight: int
@@ -115,16 +116,7 @@ class FontVariant:
     is_italic: bool
 
 
-WEIGHT_TO_CSS = {
-    "Thin": 100,
-    "ExtraLight": 200,
-    "Light": 300,
-    "Regular": 400,
-    "Medium": 500,
-    "SemiBold": 600,
-    "Bold": 700,
-    "ExtraBold": 800,
-}
+WEIGHT_TO_CSS = {"Regular": 400, "Bold": 700}
 SUPPORTED_WEIGHTS = tuple(WEIGHT_TO_CSS)
 DEFAULT_WEIGHTS = SUPPORTED_WEIGHTS
 SUPPORTED_STYLES = ("normal", "italic")
@@ -161,7 +153,7 @@ def make_font_variant(weight_name: str, style: str) -> FontVariant:
         weight_name=weight_name,
         css_weight=WEIGHT_TO_CSS[weight_name],
         style=style,
-        latin_filename=f"JetBrainsMonoNerdFontMono-{latin_suffix}.ttf",
+        latin_filename=f"SpaceMonoNerdFontMono-{latin_suffix}.ttf",
         cjk_weight_name=weight_name,
         output_suffix=output_suffix,
         subfamily_name=subfamily_name,
@@ -362,6 +354,8 @@ def update_font_names(
     typographic_subfamily_name: str | None = None,
 ) -> None:
     """Update family, subfamily, full, PostScript, and typographic names."""
+    if any(name in family_name.casefold() for name in ("jetendard", "pretendard", "yeomil mono")):
+        raise ValueError("Family name must not contain upstream Reserved Font Names")
     logger.info("Updating font names to %s %s", family_name, subfamily_name)
     name_table = font["name"]
 
@@ -588,13 +582,32 @@ def add_hangul_ccmp_features(font: TTFont) -> None:
         record.FeatureTag = "ccmp"
         record.Feature = feature
         gsub.FeatureList.FeatureRecord.append(record)
-        gsub.FeatureList.FeatureRecord.sort(key=lambda item: item.FeatureTag)
         gsub.FeatureList.FeatureCount = len(gsub.FeatureList.FeatureRecord)
         ccmp_records = [record]
 
     for record in ccmp_records:
         record.Feature.LookupListIndex.append(lookup_index)
         record.Feature.LookupCount = len(record.Feature.LookupListIndex)
+
+    # Feature indices are referenced by every Script/LangSys. Sort only after
+    # remapping those indices, otherwise Space Mono's existing features break.
+    records = gsub.FeatureList.FeatureRecord
+    old_records = list(records)
+    records.sort(key=lambda item: item.FeatureTag)
+    index_map = {old: records.index(record) for old, record in enumerate(old_records)}
+    ccmp_indices = [i for i, record in enumerate(records) if record.FeatureTag == "ccmp"]
+    for script_record in gsub.ScriptList.ScriptRecord:
+        script = script_record.Script
+        lang_systems = [script.DefaultLangSys] + [record.LangSys for record in script.LangSysRecord]
+        for lang_sys in lang_systems:
+            if lang_sys is None:
+                continue
+            lang_sys.FeatureIndex = sorted(
+                {index_map[i] for i in lang_sys.FeatureIndex} | set(ccmp_indices)
+            )
+            lang_sys.FeatureCount = len(lang_sys.FeatureIndex)
+            if lang_sys.ReqFeatureIndex != 0xFFFF:
+                lang_sys.ReqFeatureIndex = index_map[lang_sys.ReqFeatureIndex]
 
     logger.info("Appended Hangul ccmp lookup at GSUB lookup index %d", lookup_index)
 
@@ -611,7 +624,7 @@ def merge_fonts(
     is_italic: bool = False,
     css_weight: int | None = None,
 ) -> MergeStats:
-    """Merge JetBrainsMono Nerd Font Mono with Pretendard CJK glyphs."""
+    """Merge SpaceMono Nerd Font Mono with Pretendard CJK glyphs."""
     logger.info("Merging %s + %s -> %s", latin_path, cjk_path, output_path)
     latin_font = TTFont(str(latin_path))
     cjk_font = TTFont(str(cjk_path))
@@ -658,6 +671,9 @@ def merge_fonts(
     capped_codepoints: list[int] = []
 
     for codepoint in codepoints:
+        target_advance = (
+            latin_advance if unicodedata.east_asian_width(chr(codepoint)) == "H" else korean_advance
+        )
         cjk_glyph_name = source_glyph_for_codepoint(codepoint, cjk_cmap)
         if cjk_glyph_name is None or cjk_glyph_name not in cjk_glyph_set:
             continue
@@ -666,7 +682,7 @@ def merge_fonts(
         bounds = get_glyph_bounds(cjk_glyph_set, cjk_glyph_name)
         fitted = calculate_fitted_transform(
             bounds,
-            target_width=korean_advance,
+            target_width=target_advance,
             requested_scale=requested_total_scale,
             safe_ymin=safe_ymin,
             safe_ymax=safe_ymax,
@@ -688,7 +704,7 @@ def merge_fonts(
 
         glyf_table[target_glyph_name] = glyph_pen.glyph()
         hmtx_table.metrics[target_glyph_name] = (
-            korean_advance,
+            target_advance,
             fitted.left_side_bearing,
         )
         update_unicode_cmaps(latin_font, codepoint, target_glyph_name)
@@ -715,6 +731,25 @@ def merge_fonts(
         subfamily_name,
         typographic_subfamily_name=typographic_subfamily_name,
     )
+
+    # Retain the base copyright and add the donor/build-software notices.
+    name_table = latin_font["name"]
+    copyright_text = (
+        "\n".join(
+            dict.fromkeys(
+                record.toUnicode()
+                for source in (latin_font, cjk_font)
+                for record in source["name"].names
+                if record.nameID == 0
+            )
+        )
+        + "\nCopyright (c) 2026 Jung Woong Park (Jetendard build software)."
+    )
+    license_text = (Path(__file__).parent / "licenses" / "LICENSE").read_text(encoding="utf-8")
+    for platform, encoding, language in ((3, 1, 0x409),):
+        name_table.setName(copyright_text, 0, platform, encoding, language)
+        name_table.setName(license_text, 13, platform, encoding, language)
+        name_table.setName("https://openfontlicense.org/", 14, platform, encoding, language)
 
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)

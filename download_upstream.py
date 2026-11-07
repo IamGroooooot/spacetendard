@@ -1,7 +1,8 @@
-"""Download and extract upstream font files for Jetendard."""
+"""Download and extract upstream font files for Spacetendard."""
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import shutil
 import subprocess
@@ -13,7 +14,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from jetendard.builder import DEFAULT_VARIANTS, SUPPORTED_WEIGHTS  # noqa: E402
+from spacetendard.builder import DEFAULT_VARIANTS, SUPPORTED_WEIGHTS  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -21,18 +22,22 @@ logger = logging.getLogger(__name__)
 NERD_FONTS_VERSION = "v3.4.0"
 PRETENDARD_VERSION = "1.3.9"
 
-JETBRAINS_MONO_URL = (
-    f"https://github.com/ryanoasis/nerd-fonts/releases/download/"
-    f"{NERD_FONTS_VERSION}/JetBrainsMono.zip"
+SPACE_MONO_URL = (
+    f"https://github.com/ryanoasis/nerd-fonts/releases/download/{NERD_FONTS_VERSION}/SpaceMono.zip"
 )
 PRETENDARD_URL = (
     "https://github.com/orioncactus/pretendard/releases/download/"
     f"v{PRETENDARD_VERSION}/Pretendard-{PRETENDARD_VERSION}.zip"
 )
 
+ARCHIVE_SHA256 = {
+    "SpaceMono-v3.4.0.zip": "5edd68ef794c54cda235eb88b350e75f86b459bf8d499c698ea715cb121045e1",
+    "Pretendard-1.3.9.zip": "04be351a74d6bf7d60c480a3087e51d185485d35a52023142af1df19eb8c428a",
+}
+
 UPSTREAM_DIR = Path("upstream")
 ARCHIVE_DIR = UPSTREAM_DIR / "_archives"
-JETBRAINS_DIR = UPSTREAM_DIR / "jetbrainsmono"
+SPACE_MONO_DIR = UPSTREAM_DIR / "spacemono"
 PRETENDARD_DIR = UPSTREAM_DIR / "pretendard"
 OPTIONAL_PRETENDARD_FILES = ("PretendardVariable.ttf",)
 
@@ -46,7 +51,7 @@ def download_file(url: str, output_path: Path) -> None:
 
     tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
     logger.info("Downloading %s", url)
-    request = urllib.request.Request(url, headers={"User-Agent": "Jetendard builder"})
+    request = urllib.request.Request(url, headers={"User-Agent": "Spacetendard builder"})
     try:
         with (
             urllib.request.urlopen(request, timeout=120) as response,
@@ -66,7 +71,7 @@ def download_file(url: str, output_path: Path) -> None:
                 "--connect-timeout",
                 "30",
                 "-A",
-                "Jetendard builder",
+                "Spacetendard builder",
                 "-o",
                 str(tmp_path),
                 url,
@@ -122,18 +127,18 @@ def extract_expected_fonts(
 
 def write_sources_note() -> None:
     """Write a small note documenting the downloaded upstream versions."""
-    jetbrains_files = sorted({variant.latin_filename for variant in DEFAULT_VARIANTS})
+    space_mono_files = sorted({variant.latin_filename for variant in DEFAULT_VARIANTS})
     pretendard_files = [f"Pretendard-{weight}.ttf" for weight in SUPPORTED_WEIGHTS]
     note = "\n".join(
         [
-            "# Jetendard Upstream Sources",
+            "# Spacetendard Upstream Sources",
             "",
-            f"- Nerd Fonts JetBrainsMono: {NERD_FONTS_VERSION}",
+            f"- Nerd Fonts SpaceMono: {NERD_FONTS_VERSION}",
             f"- Pretendard: {PRETENDARD_VERSION}",
             "",
-            "## Extracted JetBrainsMono Nerd Font Mono Files",
+            "## Extracted SpaceMono Nerd Font Mono Files",
             "",
-            *[f"- `{filename}`" for filename in jetbrains_files],
+            *[f"- `{filename}`" for filename in space_mono_files],
             "",
             "## Extracted Pretendard Files",
             "",
@@ -149,17 +154,21 @@ def write_sources_note() -> None:
 
 
 def main() -> int:
-    """Download upstream JetBrainsMono Nerd Font Mono and Pretendard files."""
-    jetbrains_archive = ARCHIVE_DIR / f"JetBrainsMono-{NERD_FONTS_VERSION}.zip"
+    """Download upstream SpaceMono Nerd Font Mono and Pretendard files."""
+    space_mono_archive = ARCHIVE_DIR / f"SpaceMono-{NERD_FONTS_VERSION}.zip"
     pretendard_archive = ARCHIVE_DIR / f"Pretendard-{PRETENDARD_VERSION}.zip"
 
-    jetbrains_expected = {variant.latin_filename for variant in DEFAULT_VARIANTS}
+    space_mono_expected = {variant.latin_filename for variant in DEFAULT_VARIANTS}
     pretendard_expected = {f"Pretendard-{weight}.ttf" for weight in SUPPORTED_WEIGHTS}
 
     try:
-        download_file(JETBRAINS_MONO_URL, jetbrains_archive)
+        download_file(SPACE_MONO_URL, space_mono_archive)
         download_file(PRETENDARD_URL, pretendard_archive)
-        extract_expected_fonts(jetbrains_archive, JETBRAINS_DIR, jetbrains_expected)
+        for archive in (space_mono_archive, pretendard_archive):
+            digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+            if digest != ARCHIVE_SHA256[archive.name]:
+                raise ValueError(f"SHA256 mismatch for {archive}; remove it and download again")
+        extract_expected_fonts(space_mono_archive, SPACE_MONO_DIR, space_mono_expected)
         extract_expected_fonts(
             pretendard_archive,
             PRETENDARD_DIR,
