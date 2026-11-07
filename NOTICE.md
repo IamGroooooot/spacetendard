@@ -34,7 +34,9 @@ Space Mono Nerd Font Mono; limits the variants to Regular, Italic, Bold, and
 BoldItalic; fits copied Pretendard outlines to the grid; treats supported
 halfwidth forms as one cell; repairs Hangul GSUB feature references; and changes
 the generated family and package names. Nerd Fonts' earlier icon additions and
-scaling are retained. Korean remains upright in italic variants.
+scaling are retained. Korean remains upright in italic variants. Width-changing default ASCII arrow
+ligatures from Space Mono are removed so sequence diagrams preserve columns;
+standalone Unicode arrows retain their original outlines and advance widths.
 
 Spacetendard modifications are maintained by
 [IamGroooooot](https://github.com/IamGroooooot). Upstream copyrights remain with

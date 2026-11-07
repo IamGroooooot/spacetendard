@@ -34,7 +34,7 @@ implementation informed Jetendard, and the individual icon authors.
 
 ## Download
 
-For installation, use [Spacetendard-0.1.1-ttf.zip](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.1/Spacetendard-0.1.1-ttf.zip).
+For installation, use [Spacetendard-0.1.2-ttf.zip](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.2/Spacetendard-0.1.2-ttf.zip).
 The GitHub source-code ZIP does not contain installable fonts.
 [All releases and assets](https://github.com/IamGroooooot/spacetendard/releases/latest)
 also include OTF, WOFF2/CSS, and checksums. OTF files use TrueType outlines.
@@ -44,7 +44,7 @@ Run in an empty working directory on macOS or Linux:
 ```sh
 mkdir -p spacetendard-download
 cd spacetendard-download
-VERSION=0.1.1
+VERSION=0.1.2
 BASE_URL="https://github.com/IamGroooooot/spacetendard/releases/download/v${VERSION}"
 curl -fLO "$BASE_URL/Spacetendard-${VERSION}-ttf.zip"
 curl -fLO "$BASE_URL/SHA256SUMS.txt"
@@ -82,7 +82,7 @@ fc-match Spacetendard
 On Windows, use PowerShell:
 
 ```powershell
-$version = '0.1.1'
+$version = '0.1.2'
 $url = "https://github.com/IamGroooooot/spacetendard/releases/download/v$version/Spacetendard-$version-ttf.zip"
 Invoke-WebRequest -Uri $url -OutFile "Spacetendard-$version-ttf.zip"
 Expand-Archive -Path "Spacetendard-$version-ttf.zip" -DestinationPath 'spacetendard-download'
@@ -173,7 +173,9 @@ This does not guarantee alignment for every Unicode character or renderer.
 Unsupported characters, emoji, archaic Hangul, fallback fonts, `wcwidth`,
 ambiguous-width settings, and shaping support can affect the result. GitHub's
 code blocks use the reader's font, not Spacetendard. Space Mono's Latin outlines,
-OpenType features, and Nerd Font icons are retained; JetBrains Mono's programming
+OpenType features, and Nerd Font icons are retained, except default ASCII arrow
+ligatures that collapse two cells into one. `->`, `<-`, and `|>` remain literal
+ASCII; actual Unicode arrows keep their one-cell glyphs. JetBrains Mono's programming
 ligature set is not added.
 
 ## License and redistribution

@@ -391,3 +391,39 @@ def test_generated_family_grid():
     assert len(paths) == 4
     for path in paths:
         assert_korean_grid(path)
+
+
+@pytest.mark.parametrize("variant", DEFAULT_VARIANTS, ids=lambda v: v.output_suffix)
+def test_ascii_sequence_diagram_preserves_columns(variant):
+    path = Path("fonts/ttf") / f"Spacetendard-{variant.output_suffix}.ttf"
+    if not path.is_file():
+        pytest.skip("run make run to validate generated diagram rendering")
+    font = hb.Font(hb.Face(path.read_bytes()))
+    fixture = Path(__file__).parent / "fixtures/korean-order-sequence.txt"
+    samples = fixture.read_text().splitlines() + [
+        "->",
+        "<-",
+        "/>",
+        "</",
+        "<\\",
+        "\\>",
+        "|<",
+        "|>",
+        "→",
+        "←",
+        "↑",
+        "↓",
+        "↖",
+        "↗",
+        "↘",
+        "↙",
+    ]
+    for text in samples:
+        buf = hb.Buffer()
+        buf.add_str(text)
+        buf.guess_segment_properties()
+        hb.shape(font, buf)
+        expected_cells = sum(
+            2 if unicodedata.east_asian_width(char) in ("W", "F") else 1 for char in text
+        )
+        assert sum(pos.x_advance for pos in buf.glyph_positions) == expected_cells * 612, text

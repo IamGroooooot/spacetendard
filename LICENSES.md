@@ -73,7 +73,8 @@ to Devicon, whose MIT notice is included separately.
 
 Spacetendard replaces Jetendard's Latin base with Space Mono Nerd Font Mono,
 adds fitted Pretendard glyphs, changes halfwidth metrics, repairs Hangul GSUB
-feature references, and renames the generated font family to Spacetendard.
+feature references, removes default ASCII arrow substitutions that collapse terminal columns,
+and renames the generated font family to Spacetendard.
 Nerd Fonts' previous modifications (icon addition/scaling) are retained.
 Copied Pretendard outlines are scaled/centered; font metadata and formats change.
 

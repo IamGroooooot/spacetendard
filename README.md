@@ -51,9 +51,9 @@ Jetendard가 기반으로 삼은 [Yeomil Mono](https://github.com/taevel02/yeomi
 
 | 파일 | 용도 | 다운로드 |
 | --- | --- | --- |
-| `Spacetendard-0.1.1-ttf.zip` | macOS·Linux·Windows에 설치 | [TTF 받기](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.1/Spacetendard-0.1.1-ttf.zip) |
-| `Spacetendard-0.1.1-webfont.zip` | 웹사이트에서 CSS·WOFF2 사용 | [웹폰트 받기](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.1/Spacetendard-0.1.1-webfont.zip) |
-| `Spacetendard-0.1.1-otf.zip` | OTF 확장자가 필요한 환경 | [OTF 받기](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.1/Spacetendard-0.1.1-otf.zip) |
+| `Spacetendard-0.1.2-ttf.zip` | macOS·Linux·Windows에 설치 | [TTF 받기](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.2/Spacetendard-0.1.2-ttf.zip) |
+| `Spacetendard-0.1.2-webfont.zip` | 웹사이트에서 CSS·WOFF2 사용 | [웹폰트 받기](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.2/Spacetendard-0.1.2-webfont.zip) |
+| `Spacetendard-0.1.2-otf.zip` | OTF 확장자가 필요한 환경 | [OTF 받기](https://github.com/IamGroooooot/spacetendard/releases/download/v0.1.2/Spacetendard-0.1.2-otf.zip) |
 
 [최신 릴리스와 전체 파일](https://github.com/IamGroooooot/spacetendard/releases/latest)
 에서 변경 사항과 체크섬도 확인할 수 있습니다. OTF 파일도 TrueType 윤곽을 사용합니다.
@@ -63,7 +63,7 @@ macOS·Linux에서는 빈 작업 폴더에서 다음 명령을 실행하세요.
 ```sh
 mkdir -p spacetendard-download
 cd spacetendard-download
-VERSION=0.1.1
+VERSION=0.1.2
 BASE_URL="https://github.com/IamGroooooot/spacetendard/releases/download/v${VERSION}"
 curl -fLO "$BASE_URL/Spacetendard-${VERSION}-ttf.zip"
 curl -fLO "$BASE_URL/SHA256SUMS.txt"
@@ -108,7 +108,7 @@ fc-match Spacetendard
 ### Windows — PowerShell
 
 ```powershell
-$version = '0.1.1'
+$version = '0.1.2'
 $url = "https://github.com/IamGroooooot/spacetendard/releases/download/v$version/Spacetendard-$version-ttf.zip"
 Invoke-WebRequest -Uri $url -OutFile "Spacetendard-$version-ttf.zip"
 Expand-Archive -Path "Spacetendard-$version-ttf.zip" -DestinationPath 'spacetendard-download'
@@ -232,7 +232,10 @@ SHA-256을 검사합니다. 생성한 네 TTF에서 현대 한글 전체와 NFD 
 모든 유니코드나 모든 앱의 정렬을 보장하지는 않습니다. 지원하지 않는 문자,
 이모지, 옛한글, 대체 폰트, 터미널의 `wcwidth`·모호한 폭 설정, 조판 엔진에 따라
 차이가 날 수 있습니다. Space Mono의 영문·OpenType 기능·Nerd Font 아이콘을
-유지하며, JetBrains Mono의 프로그래밍 합자 세트는 추가하지 않습니다.
+유지하되, ASCII 두 칸을 한 칸으로 줄이는 기본 화살표 합자는 제거합니다.
+`->`, `<-`, `|>` 등을 입력한 그대로 표시해 뒤쪽 테두리의 위치를 보존합니다.
+실제 유니코드 화살표 `→`·`←`는 1칸 글리프로 유지합니다.
+JetBrains Mono의 프로그래밍 합자 세트는 추가하지 않습니다.
 
 ## 라이선스와 재배포
 

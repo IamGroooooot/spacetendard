@@ -365,9 +365,11 @@ def update_font_names(
     ps_name = f"{ps_family}-{ps_subfamily}"
     full_name = f"{family_name} {typographic_subfamily}"
     head_table = cast("Any", font["head"])
+    head_table.fontRevision = 0.102
     unique_id = f"{ps_name};{head_table.fontRevision:.3f}"
 
     values = {
+        5: "Version 0.1.2",
         1: family_name,
         2: subfamily_name,
         3: unique_id,
@@ -428,6 +430,50 @@ def update_style_metadata(
         os2_table.fsSelection |= fs_regular
     else:
         os2_table.fsSelection &= ~fs_regular
+
+
+def remove_collapsing_ascii_ligatures(font: TTFont) -> int:
+    """Keep default calt substitutions from reducing ASCII terminal columns.
+
+    Space Mono replaces pairs such as -> and |< with single-cell arrow glyphs.
+    Remove those rules, rather than widening the shared Unicode arrow glyphs.
+    Hangul composition and explicitly requested fraction features stay intact.
+    """
+    if "GSUB" not in font:
+        return 0
+    gsub = font["GSUB"].table
+    ascii_glyphs = {name for cp, name in font.getBestCmap().items() if 32 <= cp < 127}
+    metrics = font["hmtx"].metrics
+    lookup_indices = {
+        index
+        for record in gsub.FeatureList.FeatureRecord
+        if record.FeatureTag == "calt"
+        for index in record.Feature.LookupListIndex
+    }
+    removed = 0
+    for index in lookup_indices:
+        lookup = gsub.LookupList.Lookup[index]
+        for table in lookup.SubTable:
+            subtable = table.ExtSubTable if lookup.LookupType == 7 else table
+            if not hasattr(subtable, "ligatures"):
+                continue
+            for first, rules in list(subtable.ligatures.items()):
+                kept = []
+                for rule in rules:
+                    components = [first, *rule.Component]
+                    expected = sum(metrics[name][0] for name in components)
+                    if all(name in ascii_glyphs for name in components) and (
+                        metrics[rule.LigGlyph][0] != expected
+                    ):
+                        removed += 1
+                    else:
+                        kept.append(rule)
+                if kept:
+                    subtable.ligatures[first] = kept
+                else:
+                    del subtable.ligatures[first]
+    logger.info("Removed %d column-collapsing ASCII calt substitutions", removed)
+    return removed
 
 
 def enforce_monospace_flags(font: TTFont) -> None:
@@ -634,6 +680,7 @@ def merge_fonts(
     upm_scale = latin_head.unitsPerEm / cjk_head.unitsPerEm
     requested_total_scale = upm_scale * korean_scale
 
+    remove_collapsing_ascii_ligatures(latin_font)
     latin_advance = derive_latin_advance(latin_font)
     korean_advance = calculate_korean_target_width(latin_advance)
     side_guard = default_side_bearing_guard(latin_advance)

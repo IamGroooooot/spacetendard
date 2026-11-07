@@ -1,6 +1,6 @@
 [project]
 name = "spacetendard"
-version = "0.1.1"
+version = "0.1.2"
 description = "Build Spacetendard, a SpaceMono Nerd Font Mono and Pretendard Korean monospace font."
 readme = "README.md"
 authors = [
